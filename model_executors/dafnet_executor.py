@@ -36,11 +36,6 @@ class DAFNetExecutor(Executor):
         self.data = None                 # labelled data container of type MultimodalPairedData
         self.ul_data = None              # unlabelled data container of type MultimodalPairedData
 
-        # Image pools for GAN training
-        self.M_pool  = []
-        self.y1_pool = []
-        self.y2_pool = []
-
         self.init_swa_models()
 
     def init_swa_models(self):
@@ -547,7 +542,7 @@ class DAFNetExecutor(Executor):
         real_m = utils.data_utils.sample(real_m, batch_size)
 
         fake_m = np.concatenate([fake_m1, fake_m2], axis=0)
-        self.M_pool, fake_m = self.get_fake(fake_m, self.M_pool, sample_size=batch_size) # Pool of fake images
+        fake_m = utils.data_utils.sample(fake_m, batch_size)
 
         h = self.model.D_Mask_trainer.fit([real_m, fake_m], [np.ones(m_shape), np.zeros(m_shape)], epochs=1, verbose=0)
         epoch_loss['dis_M'].append(np.mean(h.history['loss']))
@@ -578,9 +573,9 @@ class DAFNetExecutor(Executor):
         y2c = self.model.Decoder.predict([s2_def, z2])
 
         y1 = np.concatenate([y1a, y1b, y1c], axis=0)
-        self.y1_pool, y1 = self.get_fake(y1, self.y1_pool, sample_size=batch_size)  # Pool of fake images
+        y1 = utils.data_utils.sample(y1, batch_size)
         y2 = np.concatenate([y2a, y2b, y2c], axis=0)
-        self.y2_pool, y2 = self.get_fake(y2, self.y2_pool, sample_size=batch_size)  # Pool of fake images
+        y2 = utils.data_utils.sample(y2, batch_size)
 
         # Train Discriminator
         x_shape = (batch_size,) + self.model.D_Image1.output_shape[1:]

@@ -1,11 +1,11 @@
 import logging
 
 import numpy as np
-from comet_ml import Experiment
 from keras.callbacks import CSVLogger, EarlyStopping
 from keras.utils import Progbar
 
 import costs
+import utils.data_utils
 from callbacks.dafnet_image_callback import DAFNetImageCallback
 from callbacks.loss_callback import SaveLoss
 from model_executors.base_executor import Executor
@@ -33,8 +33,6 @@ class MMSDNetExecutor(Executor):
 
         self.gen_unlabelled_lge  = None
         self.gen_unlabelled_cine = None
-
-        self.M_pool = []  # Pool of masks
 
         self.img_callback = None
         self.conf.batches_lge = 0
@@ -325,9 +323,7 @@ class MMSDNetExecutor(Executor):
         s1_def, s1_fused = self.model.Anatomy_Fuser.predict(fake_s_list)
         fake_m_list += [self.model.Segmentor.predict(s) for s in [s1_def, s1_fused]]
         fake_m = np.concatenate(fake_m_list, axis=0)[..., 0:self.conf.num_masks]
-
-        # Pool of fake images
-        self.M_pool, fake_m = self.get_fake(fake_m, self.M_pool, sample_size=batch_size)
+        fake_m = utils.data_utils.sample(fake_m, batch_size)
 
         # Train Discriminator
         m_shape = (batch_size,) + self.model.D_Mask.get_output_shape_at(0)[1:]

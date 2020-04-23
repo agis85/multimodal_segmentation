@@ -123,14 +123,3 @@ class Executor(object):
         mn = np.min([x.shape[0] for x in array_list])
         new_list = [x[0:mn] + 0. for x in array_list]
         return new_list
-
-    def get_fake(self, pred, fake_pool, sample_size=-1):
-        sample_size = self.conf.batch_size if sample_size == -1 else sample_size
-
-        if pred.shape[0] > 0:
-            fake_pool.extend(pred)
-
-        fake_pool = fake_pool[-50:]
-        sel = np.random.choice(len(fake_pool), size=(sample_size,), replace=False)
-        fake_A = np.array([fake_pool[ind] for ind in sel])
-        return fake_pool, fake_A
