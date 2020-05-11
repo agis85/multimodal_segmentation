@@ -41,8 +41,8 @@ class Executor(object):
         :param train_labels: target data
         :return              an iterator that gives a tuple of (input, output) data.
         """
-        image_dict = self.get_datagen_params(augment_intensity=True)
-        mask_dict  = self.get_datagen_params(augment_intensity=False)
+        image_dict = self.get_datagen_params()
+        mask_dict  = self.get_datagen_params()
 
         img_gens = []
         if train_images is not None:
@@ -100,19 +100,13 @@ class Executor(object):
         if es.stopped_epoch > 0:
             return True
 
-    def get_datagen_params(self, augment_intensity=False):
+    def get_datagen_params(self):
         """
         Construct a dictionary of augmentations.
         :return: a dictionary of augmentation parameters to use with a keras image processor
         """
         d = dict(horizontal_flip=False, vertical_flip=False, rotation_range=20.,
-                 width_shift_range=0, height_shift_range=0, zoom_range=0) #, fill_mode='constant', cval=-2)
-
-        # only apply intensity augmentations to images
-        # brightness_range rescales images to 0-255. Ensure they are mapped back to -1 and 1.
-        # if augment_intensity:
-        # #     d['brightness_range'] = (0.95, 1.05)
-        #     d['preprocessing_function'] = image_utils.intensity_augmentation # add_gaussian_noise # or data_utils.normalise
+                 width_shift_range=0, height_shift_range=0, zoom_range=0)
         return d
 
     def align_batches(self, array_list):

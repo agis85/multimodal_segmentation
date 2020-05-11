@@ -166,7 +166,7 @@ class MMSDNetExecutor(Executor):
         cl = CSVLogger(self.conf.folder + '/training.csv')
         cl.on_train_begin()
 
-        es = EarlyStopping('val_loss_mod2', min_delta=0.01, patience=60)
+        es = EarlyStopping('val_loss_mod2_fused', min_delta=0.01, patience=60)
         es.model = self.model.Segmentor
         es.on_train_begin()
 

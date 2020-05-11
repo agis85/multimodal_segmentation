@@ -42,16 +42,16 @@ class DAFNetExecutor(Executor):
         """
         Initialise objects for Stochastic Weight Averaging
         """
-        self.swa_D_Mask        = SWA(20, Discriminator(self.conf.d_mask_params).build, None)
-        self.swa_D_Image1      = SWA(20, Discriminator(self.conf.d_image_params).build, None)
-        self.swa_D_Image2      = SWA(20, Discriminator(self.conf.d_image_params).build, None)
-        self.swa_Enc_Anatomy1  = SWA(20, anatomy_encoder.build, self.conf.anatomy_encoder)
-        self.swa_Enc_Anatomy2  = SWA(20, anatomy_encoder.build, self.conf.anatomy_encoder)
-        self.swa_Enc_Modality  = SWA(20, modality_encoder.build, self.conf)
-        self.swa_Anatomy_Fuser = SWA(20, anatomy_fuser.build, self.conf)
-        self.swa_Segmentor     = SWA(20, segmentor.build, self.conf)
-        self.swa_Decoder       = SWA(20, decoder.build, self.conf)
-        self.swa_Balancer      = SWA(20, balancer.build, self.conf)
+        self.swa_D_Mask        = SWA(40, Discriminator(self.conf.d_mask_params).build, None)
+        self.swa_D_Image1      = SWA(40, Discriminator(self.conf.d_image_params).build, None)
+        self.swa_D_Image2      = SWA(40, Discriminator(self.conf.d_image_params).build, None)
+        self.swa_Enc_Anatomy1  = SWA(40, anatomy_encoder.build, self.conf.anatomy_encoder)
+        self.swa_Enc_Anatomy2  = SWA(40, anatomy_encoder.build, self.conf.anatomy_encoder)
+        self.swa_Enc_Modality  = SWA(40, modality_encoder.build, self.conf)
+        self.swa_Anatomy_Fuser = SWA(40, anatomy_fuser.build, self.conf)
+        self.swa_Segmentor     = SWA(40, segmentor.build, self.conf)
+        self.swa_Decoder       = SWA(40, decoder.build, self.conf)
+        self.swa_Balancer      = SWA(40, balancer.build, self.conf)
 
         self.set_swa_model_weights()
 
@@ -219,7 +219,7 @@ class DAFNetExecutor(Executor):
         cl = CSVLogger(self.conf.folder + '/training.csv')
         cl.on_train_begin()
 
-        es = EarlyStopping('val_loss_mod2', min_delta=0.01, patience=60)
+        es = EarlyStopping('val_loss_mod2_fused', min_delta=0.01, patience=60)
         es.model = self.model.Segmentor
         es.on_train_begin()
 
@@ -373,18 +373,18 @@ class DAFNetExecutor(Executor):
                 self.train_batch_mask_discriminator(epoch_loss)
                 self.train_batch_image_discriminator(epoch_loss)
             if self.conf.l_mix < 1:
+                self.train_unsupervised_automated_pairing(epoch_loss)
                 self.train_batch_mask_discriminator(epoch_loss)
                 self.train_batch_image_discriminator(epoch_loss)
-                self.train_unsupervised_automated_pairing(epoch_loss)
         else:
             if self.conf.l_mix > 0:
                 self.train_supervised_expert_pairing(epoch_loss)
                 self.train_batch_mask_discriminator(epoch_loss)
                 self.train_batch_image_discriminator(epoch_loss)
             if self.conf.l_mix < 1:
+                self.train_unsupervised_expert_pairing(epoch_loss)
                 self.train_batch_mask_discriminator(epoch_loss)
                 self.train_batch_image_discriminator(epoch_loss)
-                self.train_unsupervised_expert_pairing(epoch_loss)
 
     def train_supervised_expert_pairing(self, epoch_loss):
         """
@@ -530,6 +530,9 @@ class DAFNetExecutor(Executor):
         fake_m1_from_s2 = self.model.Segmentor.predict(s2_def)
         fake_m1_list = [m[..., 0:self.conf.num_masks] for m in [fake_m1, fake_m1_from_s2]]
         fake_m1 = np.concatenate(fake_m1_list, axis=0)
+        fake_m1 = utils.data_utils.sample(fake_m1, batch_size)
+        h = self.model.D_Mask_trainer.fit([m1, fake_m1], [np.ones(m_shape), np.zeros(m_shape)], epochs=1, verbose=0)
+        epoch_loss['dis_M'].append(np.mean(h.history['loss']))
 
         # modality 2
         fake_m2 = self.model.Segmentor.predict(fake_s2)
@@ -537,14 +540,8 @@ class DAFNetExecutor(Executor):
         fake_m2_from_s1 = self.model.Segmentor.predict(s1_def)
         fake_m2_list = [m[..., 0:self.conf.num_masks] for m in [fake_m2, fake_m2_from_s1]]
         fake_m2 = np.concatenate(fake_m2_list, axis=0)
-
-        real_m = np.concatenate([m1, m2], axis=0)
-        real_m = utils.data_utils.sample(real_m, batch_size)
-
-        fake_m = np.concatenate([fake_m1, fake_m2], axis=0)
-        fake_m = utils.data_utils.sample(fake_m, batch_size)
-
-        h = self.model.D_Mask_trainer.fit([real_m, fake_m], [np.ones(m_shape), np.zeros(m_shape)], epochs=1, verbose=0)
+        fake_m2 = utils.data_utils.sample(fake_m2, batch_size)
+        h = self.model.D_Mask_trainer.fit([m2, fake_m2], [np.ones(m_shape), np.zeros(m_shape)], epochs=1, verbose=0)
         epoch_loss['dis_M'].append(np.mean(h.history['loss']))
 
     def train_batch_image_discriminator(self, epoch_loss):
