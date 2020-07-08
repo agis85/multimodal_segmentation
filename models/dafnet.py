@@ -280,10 +280,10 @@ class DAFNet(MMSDNet):
         adv_y2 = self.D_Image2(y2)
 
         # deform and fuse
-        s1_def_lst = [self.Anatomy_Fuser([s2_i, s1])[0] for s2_i in s2_lst]
+        s1_def_lst = [self.Anatomy_Fuser([s1_i, s2])[0] for s1_i in s1_lst]
         w1_def_lst = self.calculate_weights([s2] + s1_def_lst)
 
-        s2_def_lst = [self.Anatomy_Fuser([s1_i, s2])[0] for s1_i in s1_lst]
+        s2_def_lst = [self.Anatomy_Fuser([s2_i, s1])[0] for s2_i in s2_lst]
         w2_def_lst = self.calculate_weights([s1] + s2_def_lst)
 
         # decoder (cross-reconstruction)

@@ -28,8 +28,8 @@ params = {
 }
 
 # discriminator configs
-d_mask_params  = {'filters': 64, 'lr': 0.0001, 'name': 'D_Mask', 'downsample_blocks': 4}
-d_image_params = {'filters': 64, 'lr': 0.0001, 'name': 'D_Image', 'downsample_blocks': 4}
+d_mask_params  = {'filters': 64, 'lr': 0.0001, 'name': 'D_Mask'}
+d_image_params = {'filters': 64, 'lr': 0.0001, 'name': 'D_Image'}
 
 anatomy_encoder_params = {
     'normalise'   : 'batch',   # normalisation layer - can be batch or instance
