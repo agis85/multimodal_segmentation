@@ -1,7 +1,10 @@
 # Multimodal segmentation with disentangled representations
 
 
-Implementations of the **MMSDNet** and **DAFNet** models that perform multimodal  image segmentation using a disentangled representation of anatomy and modality factors. For further details please see our paper [Multimodal Cardiac Segmentation Using Disentangled Representation Learning] presented in STACOM 2019, and the pre-print [Disentangle Align and Fuse for Multimodal and Zero-shot Image Segmentation].
+Implementations of the **MMSDNet** and **DAFNet** models that perform multimodal  image segmentation using a disentangled representation of anatomy and modality factors. For further details please see our paper [Multimodal Cardiac Segmentation Using Disentangled Representation Learning] presented in STACOM 2019, and the pre-print [Disentangle align and fuse for multimodal and semi-supervised image segmentation].
+
+Pseudocode of the training process is uploaded on [pseudocode.pdf](pseudocode.pdf)
+
 
 The code is written in Python 3.6 with [Keras] 2.1.6 and [tensorflow] 1.4.0 and 
 experiments were run in Titan-X and Titan-V GPUs. The `requirements.txt` file contains all Python library versions.
@@ -49,7 +52,7 @@ isbn="978-3-030-39074-7"
 
 ```
 @article{chartsias2020disentangle,
-  title={Disentangle, align and fuse for multimodal and zero-shot image segmentation},
+  title={Disentangle, align and fuse for multimodal and semi-supervised image segmentation},
   author={Chartsias, Agisilaos and Papanastasiou, Giorgos and Wang, Chengjia and Semple, Scott and Newby, David and Dharmakumar, Rohan and Tsaftaris, Sotirios A},
   journal={arXiv preprint arXiv:1911.04417},
   year={2019}
