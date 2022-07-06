@@ -20,7 +20,7 @@ gitdb2==2.0.5
 GitPython==2.1.11
 grpcio==1.12.1
 h5py==2.8.0
-html5lib==0.9999999
+html5lib==0.999999999
 idna==2.8
 imageio==2.8.0
 imgaug==0.2.6
